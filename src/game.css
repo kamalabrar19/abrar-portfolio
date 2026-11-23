@@ -1,0 +1,53 @@
+.game-invite { margin-top:145px; padding:38px 0; display:flex; justify-content:space-between; align-items:end; gap:35px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.game-invite h2 { font:500 clamp(44px,6vw,75px)/.98 var(--serif); letter-spacing:-.08em; margin:0 0 17px; }
+.game-invite h2 span, .game-header h2 span { color:var(--lime); }
+.game-invite p:not(.eyebrow) { max-width:420px; color:#899389; margin:0; }
+.game-section { margin-top:145px; padding:110px 0 90px; background:#172016; border-top:1px solid rgba(199,243,107,.18); border-bottom:1px solid rgba(199,243,107,.18); }
+.game-header { display:flex; justify-content:space-between; align-items:start; gap:35px; margin-bottom:40px; }
+.game-header h2 { font:500 clamp(44px,6vw,75px)/.98 var(--serif); letter-spacing:-.08em; margin:0; }
+.icon-button { display:grid; place-items:center; width:44px; height:44px; border:1px solid rgba(241,242,236,.28); background:transparent; color:var(--paper); cursor:pointer; }
+.icon-button:hover { color:var(--lime); border-color:var(--lime); }
+.game-stage { position:relative; aspect-ratio:16/9; max-height:540px; overflow:hidden; border:1px solid rgba(199,243,107,.24); background:#151b14; cursor:crosshair; touch-action:none; }
+.game-stage:focus-visible { outline:2px solid var(--lime); outline-offset:4px; }
+.shooter-hud { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0; font:11px var(--mono); color:#b7c6ac; }
+.shooter-hud>span { display:flex; align-items:center; gap:8px; }
+.shooter-hud strong { font-size:19px; color:var(--lime); }
+.game-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(13,21,14,.92); color:var(--paper); text-align:center; }
+.game-overlay h3 { font:500 28px var(--serif); margin:0 0 10px; }
+.game-overlay p { font-size:13px; margin:0 0 18px; }
+.game-section button { cursor:pointer; }
+.game-section .game-buttons { flex-wrap:wrap; }
+.game-section .game-control { min-width:44px; min-height:44px; display:grid; place-items:center; }
+.game-section .button { min-height:44px; }
+.game-stage canvas { display:block; width:100%; height:100%; }
+.game-score { position:absolute; top:18px; right:20px; display:grid; gap:4px; min-width:120px; color:#9eae98; font:10px var(--mono); text-align:right; pointer-events:none; }
+.game-score span { display:flex; align-items:center; justify-content:end; gap:6px; color:var(--lime); }
+.game-score strong { color:var(--paper); font:500 32px var(--serif); letter-spacing:-.06em; }
+.game-score small { color:#73836d; font:9px var(--mono); }
+.game-help { position:absolute; bottom:17px; left:20px; color:var(--lime); font:11px var(--mono); pointer-events:none; }
+.game-help span { color:#7a8974; margin-left:10px; }
+.fire-control { color:var(--lime); }
+.game-controls { display:flex; justify-content:space-between; align-items:center; gap:20px; padding-top:18px; }
+.game-status { display:flex; align-items:center; gap:8px; color:var(--lime); font:10px var(--mono); }
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--lime); box-shadow:0 0 10px var(--lime); }
+.game-count { color:#758472; margin-left:14px; }
+.game-buttons { display:flex; align-items:center; gap:8px; }
+.game-control { width:42px; height:42px; border:1px solid rgba(241,242,236,.28); background:transparent; color:var(--paper); font-size:20px; cursor:pointer; }
+.game-control:hover { color:var(--lime); border-color:var(--lime); }
+.game-note { color:#72806d; font:10px var(--mono); margin:20px 0 0; }
+@media (max-width:640px) {
+  .game-invite { margin-top:100px; display:grid; align-items:start; }
+  .game-invite .button { width:max-content; }
+  .game-section { margin-top:100px; padding:75px 0 60px; }
+  .game-header { margin-bottom:28px; }
+  .game-stage { height:auto; aspect-ratio:16/10; }
+  .shooter-hud { gap:8px; font-size:9px; }
+  .shooter-hud strong { font-size:16px; }
+  .game-overlay h3 { font-size:22px; }
+  .game-help { font-size:9px; }
+  .game-help span { display:none; }
+  .game-controls { align-items:start; flex-direction:column; }
+  .game-buttons { width:100%; }
+  .game-control { flex:1; }
+  .game-buttons .button { margin-left:auto; }
+}

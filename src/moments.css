@@ -1,0 +1,39 @@
+.moments-section { overflow:clip; padding-bottom:24px; }
+.moments-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:72px; align-items:center; padding:20px 18px 25px 8px; }
+.moment-stack { position:relative; perspective:1100px; isolation:isolate; --tilt-x:0deg; --tilt-y:0deg; }
+.moment-stack-back { position:absolute; inset:0; border:1px solid #ffffff28; border-radius:8px; background:#c7f36b0e; pointer-events:none; }
+.back-one { transform:rotate(3deg) translate(8px,8px); }
+.back-two { transform:rotate(-3deg) translate(-3px,6px); background:#78c8cf0b; }
+.moment-frame { position:relative; padding:10px; border:1px solid #ffffff40; background:#ffffff0a; backdrop-filter:blur(14px); border-radius:8px; transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y)); transition:transform .18s ease-out; box-shadow:0 18px 40px #0004; }
+.moment-photo { position:relative; aspect-ratio:4/3; overflow:hidden; border-radius:3px; touch-action:pan-y; cursor:grab; }
+.moment-photo:active { cursor:grabbing; }
+.moment-image-button { display:block; width:100%; height:100%; padding:0; border:0; color:white; background:#242b24; cursor:inherit; }
+.moment-photo img { display:block; width:100%; height:100%; object-fit:cover; pointer-events:none; user-select:none; }
+.moment-zoom { position:absolute; top:14px; right:14px; width:44px; height:44px; display:grid; place-items:center; border:1px solid #ffffff50; border-radius:50%; background:#141c16aa; backdrop-filter:blur(10px); }
+.moment-placeholder { position:absolute; bottom:14px; left:14px; max-width:calc(100% - 28px); padding:6px 9px; color:#f1f2ec; background:#111c; font:9px var(--mono); pointer-events:none; }
+.moment-editorial h3 { font:500 36px/1.16 var(--serif); letter-spacing:0; margin-bottom:20px; overflow-wrap:anywhere; }
+.moment-editorial .eyebrow { color:var(--lime); }
+.moment-caption { color:#b8c0b5; line-height:1.8; }
+.moment-disclaimer { color:#8f9b8a; font-size:12px; }
+.moment-navigation { display:flex; gap:20px; align-items:center; margin-top:30px; }
+.moment-control { flex-shrink:0; width:46px; height:46px; display:grid; place-items:center; border:1px solid #c7f36b70; background:#151c16; color:var(--lime); border-radius:50%; cursor:pointer; transition:background .2s; }
+.moment-control:hover { background:#2e3d24; }
+.moment-counter { font:12px var(--mono); color:#bdc8b7; min-width:60px; text-align:center; }
+.moment-dots { display:flex; margin-top:10px; }
+.moment-dots button { width:44px; height:44px; border:0; background:none; cursor:pointer; display:grid; place-items:center; }
+.moment-dots span { width:6px; height:6px; border-radius:50%; background:#5d6a55; }
+.moment-dots [aria-current] span { background:var(--lime); width:20px; border-radius:4px; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+.moment-dialog { position:fixed; inset:0; width:100%; max-width:none; height:100dvh; max-height:none; margin:0; padding:72px 5% 24px; border:0; color:var(--paper); background:#0e140ff5; overflow:auto; }
+.moment-dialog::backdrop { background:#000b; backdrop-filter:blur(14px); }
+.moment-dialog[open] { display:flex; flex-direction:column; gap:18px; }
+.moment-close { position:absolute; top:16px; right:24px; }
+.moment-full-photo { flex:1; min-height:0; display:flex; justify-content:center; }
+.moment-full-photo img { max-width:100%; width:auto; height:100%; max-height:calc(100dvh - 225px); object-fit:contain; }
+.moment-modal-footer { display:flex; justify-content:space-between; gap:24px; align-items:center; }
+.moment-modal-footer h3 { font:500 23px var(--serif); margin:0 0 8px; }
+.moment-modal-footer p { color:#a5b39e; font-size:13px; margin:0; max-width:700px; }
+.moment-modal-footer .moment-navigation { margin:0; }
+.moment-missing { width:100%; height:100%; min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:#202b22; color:#c0ccba; }
+@media(max-width:760px) { .moments-layout { grid-template-columns:1fr; gap:36px; padding:12px 12px 10px; }.moment-editorial h3 { font-size:28px; }.moment-editorial .eyebrow { margin-bottom:14px; }.moment-navigation { margin-top:20px; }.moment-modal-footer { flex-direction:column; align-items:flex-start; gap:14px; }.moment-full-photo img { max-height:calc(100dvh - 310px); }.moment-placeholder { font-size:8px; }.moment-dialog { padding:72px 20px 24px; } }
+@media(prefers-reduced-motion:reduce) { .moment-frame { transform:none; transition:none; }.moment-control { transition:none; } }

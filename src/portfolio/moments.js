@@ -1,0 +1,9 @@
+// Personal photographs served from public/moments/.
+// placeholder:false marks these as Kamal's own photos.
+export const moments = [
+  { id: 'stage', title: 'Behind the microphone', category: 'STAND-UP & STORYTELLING', caption: 'A stand-up special show with Stand Up Indo Tangsel.', src: '/moments/dsc0004.jpg', fullSrc: '/moments/dsc0004.jpg', alt: 'Kamal performing stand-up comedy on stage', placeholder: false },
+  { id: 'ai', title: 'Building AI RAG chatbots', category: 'AI & DEVELOPMENT', caption: 'Bringing documents, retrieval, and conversations together.', src: '/moments/dsc01712.jpg', fullSrc: '/moments/dsc01712.jpg', alt: 'Development workspace while building an AI RAG chatbot', placeholder: false },
+  { id: 'workflow', title: 'Connecting the workflow', category: 'AUTOMATION & CURIOSITY', caption: 'An afternoon working on n8n automations.', src: '/moments/img_7184.jpg', fullSrc: '/moments/img_7184.jpg', alt: 'Working on workflow automation and connected operations', placeholder: false },
+  { id: 'community', title: 'A community, a shared stage', category: 'PEOPLE & CONNECTION', caption: 'The people and conversations behind a memorable event.', src: '/moments/img_7186.jpg', fullSrc: '/moments/img_7186.jpg', alt: 'A community gathering and shared stage moment', placeholder: false },
+  { id: 'marketing', title: 'Marketing in motion', category: 'MARKETING & GROWTH', caption: 'Building and iterating on marketing assets and growth workflows.', src: '/moments/whatsapp-moment.jpg', fullSrc: '/moments/whatsapp-moment.jpg', alt: 'A candid moment from marketing and growth work', placeholder: false },
+];

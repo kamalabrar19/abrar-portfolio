@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Admin</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #0e140f; color: #f1f2ec; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 16px; }
+    .card { background: #151c16; border: 1px solid #ffffff20; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    textarea { width: 100%; min-height: 420px; background: #0b100c; color: #f1f2ec; border: 1px solid #ffffff30; border-radius: 6px; padding: 12px; font-family: ui-monospace, monospace; font-size: 13px; }
+    button { background: #c7f36b; color: #0e140f; border: 0; border-radius: 6px; padding: 10px 16px; font-weight: 600; cursor: pointer; margin-right: 8px; }
+    button.secondary { background: #242b24; color: #f1f2ec; }
+    .status { margin: 12px 0; color: #b8c0b5; }
+    .error { color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Portfolio Admin Dashboard</h1>
+    <div id="auth" class="card">
+      <p>Sign in with the authorized Google account.</p>
+      <div id="g_id_onload" data-client_id="" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+      <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+      <div id="status" class="status"></div>
+    </div>
+    <div id="editor" class="card" style="display:none;">
+      <p>Signed in as <strong id="who"></strong></p>
+      <textarea id="content" spellcheck="false"></textarea>
+      <div style="margin-top:12px;">
+        <button id="save">Save changes</button>
+        <button id="reload" class="secondary">Reload</button>
+        <button id="logout" class="secondary">Logout</button>
+      </div>
+      <div id="saveStatus" class="status"></div>
+    </div>
+  </div>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    let clientId = '';
+    async function init() {
+      const res = await fetch('/api/config');
+      const cfg = await res.json();
+      clientId = cfg.clientId;
+      const onload = document.getElementById('g_id_onload');
+      onload.setAttribute('data-client_id', clientId);
+      if (window.google && window.google.accounts) {
+        window.google.accounts.id.initialize({ client_id: clientId, callback: handleCredentialResponse });
+        window.google.accounts.id.renderButton(document.querySelector('.g_id_signin'), { theme: 'outline', size: 'large' });
+      } else {
+        setTimeout(init, 300);
+      }
+    }
+    async function handleCredentialResponse(response) {
+      const status = document.getElementById('status');
+      status.textContent = 'Verifying...';
+      const r = await fetch('/api/auth/google', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: response.credential }) });
+      const data = await r.json();
+      if (!r.ok) { status.textContent = data.error || 'Login failed'; status.className = 'status error'; return; }
+      status.textContent = '';
+      showEditor(data.user);
+    }
+    async function showEditor(user) {
+      document.getElementById('auth').style.display = 'none';
+      document.getElementById('editor').style.display = 'block';
+      document.getElementById('who').textContent = user.email;
+      await loadContent();
+    }
+    async function loadContent() {
+      const r = await fetch('/api/content');
+      const data = await r.json();
+      document.getElementById('content').value = JSON.stringify(data, null, 2);
+    }
+    async function saveContent() {
+      const status = document.getElementById('saveStatus');
+      let parsed;
+      try { parsed = JSON.parse(document.getElementById('content').value); }
+      catch (e) { status.textContent = 'Invalid JSON: ' + e.message; status.className = 'status error'; return; }
+      status.textContent = 'Saving...';
+      const r = await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) });
+      const data = await r.json();
+      if (!r.ok) { status.textContent = data.error || 'Save failed'; status.className = 'status error'; return; }
+      status.textContent = 'Saved.';
+      status.className = 'status';
+    }
+    document.getElementById('save').addEventListener('click', saveContent);
+    document.getElementById('reload').addEventListener('click', loadContent);
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      location.reload();
+    });
+    // Check existing session
+    (async () => {
+      const r = await fetch('/api/auth/me');
+      if (r.ok) {
+        const data = await r.json();
+        showEditor(data.user);
+      }
+    })();
+    init();
+  </script>
+</body>
+</html>
