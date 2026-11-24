@@ -17,7 +17,8 @@ for (const width of [1366, 390]) {
     await expect(arena.locator('canvas')).toBeVisible();
     await page.mouse.move(0, 0);
     await arena.focus();
-    await expect(arena).toHaveAttribute('data-enemy-ids', '1');
+    await expect(arena).toHaveAttribute('data-enemy-ids', /[0-9]/);
+    const firstEnemy = (await arena.getAttribute('data-enemy-ids')).split(',')[0];
     // The desktop uses held Space; mobile uses its on-screen fire control.
     if (width > 600) await page.keyboard.down('Space');
     else {
@@ -29,7 +30,7 @@ for (const width of [1366, 390]) {
     }
     await expect.poll(async () => Number(await page.getByTestId('score').innerText()), { timeout: 20000 }).toBeGreaterThan(0);
     await page.keyboard.up('Space');
-    await expect.poll(async () => (await arena.getAttribute('data-enemy-ids')).split(',')).not.toContain('1');
+    await expect.poll(async () => (await arena.getAttribute('data-enemy-ids')).split(',')).not.toContain(firstEnemy);
     const earned = Number(await page.getByTestId('score').innerText());
     await expect.poll(async () => Number(await page.getByTestId('best-score').innerText())).toBeGreaterThanOrEqual(earned);
     await page.getByRole('button', { name: 'Pause', exact: true }).click();

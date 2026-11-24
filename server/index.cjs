@@ -6,10 +6,11 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { OAuth2Client } = require('google-auth-library');
+const { validateContent } = require('./validate-content.cjs');
 
 const PORT = process.env.PORT || 5000;
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'kamalabrar19@gmail.com';
+const CLIENT_ID = (process.env.GOOGLE_CLIENT_ID || '').trim();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'kamalabrar19@gmail.com').trim().toLowerCase();
 const DATA_FILE = path.join(__dirname, 'data', 'content.json');
 const SESSIONS = new Map();
 
@@ -19,6 +20,11 @@ const app = express();
 app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+app.use('/admin', (req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
 
 function getSession(req) {
   const sid = req.cookies && req.cookies.sid;
@@ -44,19 +50,30 @@ app.get('/api/config', (req, res) => {
 
 app.post('/api/auth/google', async (req, res) => {
   const { credential } = req.body || {};
-  if (!credential) return res.status(400).json({ error: 'Missing credential' });
+  if (typeof credential !== 'string' || !credential.trim()) return res.status(400).json({ error: 'Kredensial Google tidak tersedia. Silakan masuk kembali.' });
   if (!CLIENT_ID) return res.status(500).json({ error: 'GOOGLE_CLIENT_ID not configured' });
   try {
     const ticket = await oauthClient.verifyIdToken({ idToken: credential, audience: CLIENT_ID });
     const payload = ticket.getPayload();
-    if (!payload || !payload.email_verified) return res.status(401).json({ error: 'Email not verified' });
-    if (payload.email !== ADMIN_EMAIL) return res.status(403).json({ error: 'Not allowed' });
+    if (!payload || !payload.email_verified || typeof payload.email !== 'string') return res.status(401).json({ error: 'Email Google belum terverifikasi.' });
+    const email = payload.email.trim().toLowerCase();
+    if (email !== ADMIN_EMAIL) return res.status(403).json({ error: 'Akun ini bukan admin. Gunakan akun Google admin yang terdaftar.' });
     const sid = crypto.randomBytes(32).toString('hex');
-    SESSIONS.set(sid, { user: { email: payload.email, name: payload.name, picture: payload.picture }, expires: Date.now() + 7 * 24 * 60 * 60 * 1000 });
+    SESSIONS.set(sid, { user: { email, name: payload.name, picture: payload.picture }, expires: Date.now() + 7 * 24 * 60 * 60 * 1000 });
     res.cookie('sid', sid, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
-    res.json({ user: { email: payload.email, name: payload.name, picture: payload.picture } });
+    res.json({ user: { email, name: payload.name, picture: payload.picture } });
   } catch (err) {
-    res.status(401).json({ error: 'Invalid token' });
+    // A certificate download failure does not mean the user's token is invalid.
+    // Never log the credential or the transport's request configuration.
+    if (err.message?.startsWith('Failed to retrieve verification certificates') ||
+        ['EACCES', 'EPERM', 'ENOTFOUND', 'EAI_AGAIN', 'ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err.code || err.cause?.code)) {
+      console.warn('Google login: certificate service unavailable', err.code || err.cause?.code || 'transport_error');
+      return res.status(503).json({ code: 'GOOGLE_UNAVAILABLE', error: 'Server tidak dapat menghubungi Google untuk memverifikasi login. Coba lagi sebentar atau periksa koneksi server.' });
+    }
+    if (err.message?.includes('Wrong recipient')) {
+      return res.status(401).json({ code: 'GOOGLE_CLIENT_MISMATCH', error: 'Konfigurasi login Google berubah. Muat ulang halaman lalu masuk kembali.' });
+    }
+    res.status(401).json({ code: 'INVALID_GOOGLE_TOKEN', error: 'Sesi Google tidak valid atau kedaluwarsa. Silakan masuk kembali.' });
   }
 });
 
@@ -82,11 +99,14 @@ app.get('/api/content', (req, res) => {
   }
 });
 
-app.put('/api/content', (req, res) => {
+app.put('/api/content', requireAdmin, (req, res) => {
   try {
     const content = req.body;
-    if (!content || typeof content !== 'object') return res.status(400).json({ error: 'Invalid content' });
-    fs.writeFileSync(DATA_FILE, JSON.stringify(content, null, 2));
+    const error = validateContent(content);
+    if (error) return res.status(400).json({ error });
+    const temporaryFile = `${DATA_FILE}.tmp`;
+    fs.writeFileSync(temporaryFile, JSON.stringify(content, null, 2));
+    fs.renameSync(temporaryFile, DATA_FILE);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Cannot save content' });
@@ -108,7 +128,8 @@ if (fs.existsSync(distDir)) {
   });
 }
 
-app.listen(PORT, () => {
+if (require.main === module) app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
   console.log(`Admin dashboard: http://localhost:${PORT}/admin`);
 });
+module.exports = app;

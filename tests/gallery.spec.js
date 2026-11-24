@@ -14,7 +14,8 @@ for (const width of [1366,390]) test(`gallery navigation and accessible lightbox
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
   await expect(gallery.getByRole('button',{name:'Enlarge photo'})).toBeFocused();
-  const photo=gallery.locator('.moment-photo');
+  // Wait for the newly selected photo, rather than the outgoing animated node.
+  const photo=gallery.locator('.moment-photo').filter({has:page.getByRole('img',{name:'Working on workflow automation and connected operations'})});
   await expect(photo).toBeVisible();
   await photo.scrollIntoViewIfNeeded();
   await page.waitForTimeout(350);

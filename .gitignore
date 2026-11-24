@@ -26,3 +26,8 @@ dist-ssr
 # Secrets
 .env
 client_secret_*.json
+
+# Local test artifacts and sandbox shell cache
+/test-results/
+/playwright-report/
+/Microsoft/

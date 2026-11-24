@@ -7,7 +7,10 @@ import '../moments.css';
 function Photo({ item, full = false }) {
   const [failed, setFailed] = useState(false);
   return failed ? <div className="moment-missing" role="img" aria-label={item.alt}><Camera size={36} /><span>Photo unavailable</span></div> :
-    <img src={full ? item.fullSrc || item.src : item.src} alt={item.alt} draggable="false" loading={full ? 'eager' : 'lazy'} decoding="async" onError={() => setFailed(true)} />;
+    <img src={photoUrl(full ? item.fullSrc || item.src : item.src)} alt={item.alt} draggable="false" loading={full ? 'eager' : 'lazy'} decoding="async" onError={() => setFailed(true)} />;
+}
+function photoUrl(src) {
+  return src?.startsWith('/') && !src.startsWith('//') ? `${import.meta.env.BASE_URL}${src.slice(1)}` : src;
 }
 export default function MomentsGallery() {
   const { moments } = useContent();
@@ -18,18 +21,21 @@ export default function MomentsGallery() {
   const enlarge = useRef(null);
   const dragged = useRef(false);
   const reduced = useReducedMotion();
-  const item = moments[index];
+  const hasMoments = moments.length > 0;
+  const safeIndex = hasMoments ? index % moments.length : 0;
+  const item = moments[safeIndex];
   const change = step => {
     setDirection(step); setIndex(current => (current + step + moments.length) % moments.length);
   };
   useEffect(() => {
-    if (!zoomed) return undefined;
+    if (!zoomed || !hasMoments) return undefined;
     const modal = dialog.current;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     modal.showModal();
     return () => { modal.close(); document.body.style.overflow = previous; requestAnimationFrame(() => document.querySelector('#moments .moment-image-button')?.focus({ preventScroll: true })); };
-  }, [zoomed]);
+  }, [zoomed, hasMoments]);
+  if (!item) return <section id="moments" className="section wrap"><h2>Life through the lens.</h2><p>Belum ada foto.</p></section>;
   const tilt = event => {
     if (reduced || event.pointerType !== 'mouse' || event.buttons) return;
     const box = event.currentTarget.getBoundingClientRect();
@@ -41,7 +47,7 @@ export default function MomentsGallery() {
     if (event.key === 'ArrowRight') { event.preventDefault(); change(1); }
     if (event.key === 'ArrowLeft') { event.preventDefault(); change(-1); }
   };
-  const controls = <><button type="button" className="moment-control" aria-label="Previous moment" onClick={() => change(-1)}><ArrowLeft size={19} /></button><span className="moment-counter">{String(index + 1).padStart(2, '0')} / {String(moments.length).padStart(2, '0')}</span><button type="button" className="moment-control" aria-label="Next moment" onClick={() => change(1)}><ArrowRight size={19} /></button></>;
+  const controls = <><button type="button" className="moment-control" aria-label="Previous moment" onClick={() => change(-1)}><ArrowLeft size={19} /></button><span className="moment-counter">{String(safeIndex + 1).padStart(2, '0')} / {String(moments.length).padStart(2, '0')}</span><button type="button" className="moment-control" aria-label="Next moment" onClick={() => change(1)}><ArrowRight size={19} /></button></>;
   return <section id="moments" className="section wrap moments-section" aria-label="Moments photo gallery" onKeyDown={zoomed ? undefined : keyboard}>
     <div className="section-heading"><div><p className="eyebrow"><span>PERSONAL /</span> MOMENTS & MEMORIES</p><h2>Life through <span className="muted">the lens.</span></h2></div><p className="section-description">Code, conversations, and a little stage time. A different side of the story.</p></div>
     <div className="moments-layout">
@@ -66,8 +72,8 @@ export default function MomentsGallery() {
       <div className="moment-editorial"><p className="eyebrow">{item.category}</p><h3 data-testid="moment-title">{item.title}</h3><p className="moment-caption">{item.caption}</p>
         {item.placeholder && <p className="moment-disclaimer">Sample imagery, not Kamal’s personal photograph.</p>}
         <div className="moment-navigation">{controls}</div>
-        <div className="moment-dots" aria-label="Choose a moment">{moments.map((moment, i) => <button key={moment.id} aria-label={`Show moment ${i + 1}: ${moment.title}`} aria-current={i === index ? 'true' : undefined} onClick={() => { setDirection(i > index ? 1 : -1); setIndex(i); }}><span /></button>)}</div>
-        <span className="sr-only" aria-live="polite">Moment {index + 1} of {moments.length}: {item.title}</span>
+        <div className="moment-dots" aria-label="Choose a moment">{moments.map((moment, i) => <button key={moment.id} aria-label={`Show moment ${i + 1}: ${moment.title}`} aria-current={i === safeIndex ? 'true' : undefined} onClick={() => { setDirection(i > index ? 1 : -1); setIndex(i); }}><span /></button>)}</div>
+        <span className="sr-only" aria-live="polite">Moment {safeIndex + 1} of {moments.length}: {item.title}</span>
       </div>
     </div>
     <dialog ref={dialog} className="moment-dialog" aria-labelledby="moment-modal-title" onCancel={event => { event.preventDefault(); setZoomed(false); }} onKeyDown={keyboard} onClick={event => { if (event.target === event.currentTarget) setZoomed(false); }}>
