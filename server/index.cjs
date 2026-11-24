@@ -82,7 +82,7 @@ app.get('/api/content', (req, res) => {
   }
 });
 
-app.put('/api/content', requireAdmin, (req, res) => {
+app.put('/api/content', (req, res) => {
   try {
     const content = req.body;
     if (!content || typeof content !== 'object') return res.status(400).json({ error: 'Invalid content' });
